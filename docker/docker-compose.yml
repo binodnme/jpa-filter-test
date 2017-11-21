@@ -1,0 +1,34 @@
+version: '2'
+services:
+  db:
+    container_name: jpa_commons_test_db
+    image: postgres:9.6.2-alpine
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - jpa_commons_test_postgres_data:/var/lib/postgresql/data
+
+  server:
+    container_name: jpa_commons_test_server
+    build:
+      context: ./server
+      args:
+        username: ${WILDFLY_USERNAME}
+        password: ${WILDFLY_PASSWORD}
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${SERVER_PORT_WEB}:8080"
+      - "${SERVER_PORT_ADMIN}:9990"
+    command: /opt/jboss/wildfly/bin/standalone.sh -b=0.0.0.0 -bmanagement=0.0.0.0
+    depends_on:
+      - db
+
+volumes:
+  jpa_commons_test_postgres_data:
